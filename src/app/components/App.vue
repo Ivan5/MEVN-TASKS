@@ -120,6 +120,7 @@ export default {
      .then(res => res.json())
      .then(data => {
        this.getTasks();
+       this.edit = false;
      })
    },
    updateTask(id){
