@@ -8,7 +8,7 @@
         <div class="col-md-5">
           <div class="card text-white bg-dark">
             <div class="card-body">
-              <form @submit.prevent="addTask">
+              <form @submit.prevent="sendTask">
                 <div class="form-group">
                   <label for="title">Title</label>
                   <input type="text" class="form-control" v-model="task.title">
@@ -17,7 +17,12 @@
                   <label for="title">Description</label>
                   <textarea type="text" class="form-control" v-model="task.description"></textarea>
                 </div>
-                <input type="submit" class="btn btn-warning btn-block" value="Add Task">
+                <template v-if="edit === false">
+                  <button class="btn btn-warning btn-block">Add Task</button>
+                </template>
+                <template v-else>
+                  <button class="btn btn-warning btn-block">Update Task</button>
+                </template>
               </form>
             </div>
           </div>
@@ -36,6 +41,7 @@
                 <td>{{ task.description }}</td>
                 <td>
                   <button @click="deleteTask(task._id)" class="btn btn-primary">Delete</button>
+                  <button @click="updateTask(task._id)" class="btn btn-danger">Update</button>
                 </td>
               </tr>
             </tbody>
@@ -55,25 +61,43 @@ export default {
       task: {
         title: '',
         description: ''
-      }
+      },
+      edit: false,
+      taskToEdit:''
     }
   },
  methods : {
-   addTask(){
-     fetch('/tasks',{
-       method: 'POST',
-       body: JSON.stringify(this.task),
-       headers: {
-         'Accept':'application/json',
-         'Content-type' : 'application/json'
-       }
-     })
+   sendTask(){
+    if(this.edit === false){
+       fetch('/tasks',{
+        method: 'POST',
+        body: JSON.stringify(this.task),
+        headers: {
+          'Accept':'application/json',
+          'Content-type' : 'application/json'
+        }
+      })
      .then(res=> res.json())
      .then(data => {
        this.getTasks()
      })
+    }else{
+      fetch(`/tasks/${this.taskToEdit}`,{
+        method : 'PUT',
+        body: JSON.stringify(this.task),
+        headers: {
+          'Accept':'application/json',
+          'Content-type' : 'application/json'
+        }
+      })
+      .then(res=> res.json())
+      .then(data => {
+        this.getTasks()
+        
+      })
+    }
      this.task.title = ''
-     this.task.description = ''
+     this.task.description = ''  
      
    },
    getTasks(){
@@ -97,6 +121,16 @@ export default {
      .then(data => {
        this.getTasks();
      })
+   },
+   updateTask(id){
+     fetch(`/tasks/${id}`)
+      .then(res => res.json())
+      .then(data => {
+        this.task.title = data.title
+        this.task.description = data.description
+        this.edit = true;
+        this.taskToEdit = data._id;
+      })
    }
  },
  created(){

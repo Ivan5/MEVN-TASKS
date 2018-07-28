@@ -17,6 +17,11 @@ router.post('/', async (req,res)=>{
   });  
 });
 
+router.get('/:id', async (req,res) => {
+  const task = await Task.findById(req.params.id);
+  res.json(task);
+});
+
 
 router.put('/:id', async (req,res) => {
   const id = req.params.id;
